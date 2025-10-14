@@ -5,7 +5,7 @@ from graphql import GraphQLError, GraphQLErrorExtensions
 from graphql.language.ast import Node
 from graphql.language.source import Source
 
-from graphql_auth.constants import Messages
+from .constants import Messages
 
 
 class GraphQLAuthError(GraphQLError):

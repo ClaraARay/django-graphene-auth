@@ -6,7 +6,7 @@ import django
 from django.contrib.auth import get_user_model
 from graphene_django.utils.testing import GraphQLTestCase
 
-from graphql_auth.models import UserStatus
+from .models import UserStatus
 
 _DJANGO_VERSION_AT_LEAST_4_2 = django.VERSION[0] > 4 or (django.VERSION[0] == 4 and django.VERSION[1] >= 2)
 

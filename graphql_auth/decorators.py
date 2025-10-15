@@ -9,7 +9,7 @@ def login_required(fn):
     def wrapper(cls, root, info, **kwargs):
         user = info.context.user
         if not user.is_authenticated:
-            raise GraphQLAuthError(message=Messages.UNAUTHENTICATED.message, extensions=Messages.UNAUTHENTICATED)
+            raise GraphQLAuthError(message=Messages.UNAUTHENTICATED['message'], extensions=Messages.UNAUTHENTICATED)
         return fn(cls, root, info, **kwargs)
 
     return wrapper

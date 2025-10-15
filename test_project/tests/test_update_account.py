@@ -15,7 +15,7 @@ class UpdateAccountCommonTestCase(CommonTestCase):
         response = self.query(self.get_query())
         self.assertResponseHasErrors(response)
         error = self.get_response_errors(response)[0]
-        self.assertEqual(error['message'], Messages.UNAUTHENTICATED.message)
+        self.assertEqual(error['message'], Messages.UNAUTHENTICATED['message'])
         self.assertEqual(error['extensions'], Messages.UNAUTHENTICATED)
 
     def _test_update_account_not_verified(self):

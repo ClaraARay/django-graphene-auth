@@ -1,11 +1,16 @@
 import graphene
 from graphene_django.utils import camelize
+from uobtheatre.utils.exceptions import NonFieldError, FieldError
 
 from .exceptions import WrongUsageError
 
 
-class ExpectedErrorType(graphene.Scalar):
+
+class ExpectedErrorType(graphene.Union):
+    message = graphene.Field(graphene.String)
+    code = graphene.Field(graphene.String)
     class Meta:
+        types=(NonFieldError,FieldError)
         description = """
     Errors messages and codes mapped to
     fields or non fields errors.

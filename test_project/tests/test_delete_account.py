@@ -24,7 +24,7 @@ class DeleteAccountCommonTestCase(CommonTestCase):
         response = self.query(query)
         self.assertResponseHasErrors(response)
         error = self.get_response_errors(response)[0]
-        self.assertEqual(error['message'], Messages.UNAUTHENTICATED['message'])
+        self.assertEqual(error['message'], Messages.UNAUTHENTICATED.message)
         self.assertEqual(error['extensions'], Messages.UNAUTHENTICATED)
 
     def _test_invalid_password(self):

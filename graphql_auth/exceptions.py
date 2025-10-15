@@ -30,7 +30,7 @@ class GraphQLAuthError(GraphQLError):
 
 
 class UserAlreadyVerifiedError(GraphQLAuthError):
-    default_message = Messages.ALREADY_VERIFIED['message']
+    default_message = Messages.ALREADY_VERIFIED.message
     _extensions = Messages.ALREADY_VERIFIED
 
 
@@ -54,7 +54,7 @@ class TokenScopeError(GraphQLAuthError):
 
 
 class PasswordAlreadySetError(GraphQLAuthError):
-    default_message = Messages.PASSWORD_ALREADY_SET['message']
+    default_message = Messages.PASSWORD_ALREADY_SET.message
     _extensions = Messages.PASSWORD_ALREADY_SET
 
 

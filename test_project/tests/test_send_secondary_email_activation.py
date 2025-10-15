@@ -65,7 +65,7 @@ class SendSecondaryEmailActivationCommonTestCase(CommonTestCase):
         response = self.query(self.get_query(new_email))
         self.assertResponseHasErrors(response)
         error = self.get_response_errors(response)[0]
-        self.assertEqual(error['message'], Messages.UNAUTHENTICATED['message'])
+        self.assertEqual(error['message'], Messages.UNAUTHENTICATED.message)
         self.assertEqual(error['extensions'], Messages.UNAUTHENTICATED)
 
     @mock.patch(

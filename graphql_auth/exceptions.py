@@ -9,7 +9,7 @@ from .constants import Messages
 
 
 class GraphQLAuthError(GraphQLError):
-    default_message: str = _('Not described message.')
+    default_message: str = _("Not described message.")
     _extensions: dict[str, Any] = {}
 
     def __init__(
@@ -26,11 +26,13 @@ class GraphQLAuthError(GraphQLError):
             message = self.default_message
         if not extensions and self._extensions:
             extensions = self._extensions
-        super().__init__(message, nodes, source, positions, path, original_error, extensions)
+        super().__init__(
+            message, nodes, source, positions, path, original_error, extensions
+        )
 
 
 class UserAlreadyVerifiedError(GraphQLAuthError):
-    default_message = Messages.ALREADY_VERIFIED['message']
+    default_message = Messages.ALREADY_VERIFIED[0]["message"]
     _extensions = Messages.ALREADY_VERIFIED
 
 
@@ -54,7 +56,7 @@ class TokenScopeError(GraphQLAuthError):
 
 
 class PasswordAlreadySetError(GraphQLAuthError):
-    default_message = Messages.PASSWORD_ALREADY_SET['message']
+    default_message = Messages.PASSWORD_ALREADY_SET[0]["message"]
     _extensions = Messages.PASSWORD_ALREADY_SET
 
 
@@ -65,5 +67,5 @@ class WrongUsageError(GraphQLAuthError):
 
 
 class InvalidEmailAddressError(GraphQLAuthError):
-    default_message = _('Invalid email address')
-    _extensions = {'message': default_message, 'code': 'invalid-email-address'}
+    default_message = _("Invalid email address")
+    _extensions = {"message": default_message, "code": "invalid-email-address"}

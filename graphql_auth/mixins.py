@@ -13,7 +13,11 @@ from graphql_jwt.exceptions import JSONWebTokenError, JSONWebTokenExpired
 
 from .bases import SuccessErrorsOutput
 from .constants import Messages, TokenAction
-from .decorators import password_confirmation_required, secondary_email_required, verification_required
+from .decorators import (
+    password_confirmation_required,
+    secondary_email_required,
+    verification_required,
+)
 from .exceptions import (
     EmailAlreadyInUseError,
     InvalidCredentialsError,
@@ -61,7 +65,11 @@ class RegisterMixin(SuccessErrorsOutput):
         if using_refresh_tokens():
             refresh_token = graphene.Field(graphene.String)
 
-    form = PasswordLessRegisterForm if app_settings.ALLOW_PASSWORDLESS_REGISTRATION else RegisterForm
+    form = (
+        PasswordLessRegisterForm
+        if app_settings.ALLOW_PASSWORDLESS_REGISTRATION
+        else RegisterForm
+    )
 
     @classmethod
     @token_auth
@@ -77,7 +85,9 @@ class RegisterMixin(SuccessErrorsOutput):
                     email = kwargs.get(UserModel.EMAIL_FIELD, False)  # type: ignore
                     UserStatus.clean_email(email)
                     user = f.save()
-                    send_activation = app_settings.SEND_ACTIVATION_EMAIL is True and email
+                    send_activation = (
+                        app_settings.SEND_ACTIVATION_EMAIL is True and email
+                    )
                     send_password_set = (
                         app_settings.ALLOW_PASSWORDLESS_REGISTRATION is True
                         and app_settings.SEND_PASSWORD_SET_EMAIL is True
@@ -91,21 +101,25 @@ class RegisterMixin(SuccessErrorsOutput):
 
                     if send_password_set:
                         if async_email_func:
-                            async_email_func(user.status.send_password_set_email, (info,))
+                            async_email_func(
+                                user.status.send_password_set_email, (info,)
+                            )
                         else:
                             user.status.send_password_set_email(info)
 
                     user_registered.send(sender=cls, user=user)
 
                     if app_settings.ALLOW_LOGIN_NOT_VERIFIED:
-                        payload = cls.login_on_register(root, info, password=kwargs.get("password1"), **kwargs)
+                        payload = cls.login_on_register(
+                            root, info, password=kwargs.get("password1"), **kwargs
+                        )
                         return_value = {}
                         for field in cls._meta.fields:  # type: ignore
                             return_value[field] = getattr(payload, field)
                         return cls(**return_value)
                     return cls(success=True)
                 else:
-                    return cls(success=False, errors=f.errors)
+                    return cls(success=False, errors=f.errors.get_json_data())
         except EmailAlreadyInUseError:
             return cls(
                 success=False,
@@ -199,7 +213,7 @@ class ResendActivationEmailMixin(SuccessErrorsOutput):
                 else:
                     user.status.resend_activation_email(info)  # type: ignore
                 return cls(success=True)
-            return cls(success=False, errors=f.errors)
+            return cls(success=False, errors=f.errors.get_json_data())
         except ObjectDoesNotExist:
             return cls(success=True)  # even if user is not registered
         except SMTPException:
@@ -235,7 +249,7 @@ class SendPasswordResetEmailMixin(SuccessErrorsOutput):
                 else:
                     user.status.send_password_reset_email(info, [email])  # type: ignore
                 return cls(success=True)
-            return cls(success=False, errors=f.errors)
+            return cls(success=False, errors=f.errors.get_json_data())
         except ObjectDoesNotExist:
             return cls(success=True)  # even if user is not registered
         except SMTPException:
@@ -289,7 +303,7 @@ class PasswordResetMixin(SuccessErrorsOutput):
                     user_verified.send(sender=cls, user=user)
 
                 return cls(success=True)
-            return cls(success=False, errors=f.errors)
+            return cls(success=False, errors=f.errors.get_json_data())
         except SignatureExpired:
             return cls(success=False, errors=Messages.EXPIRED_TOKEN)
         except (BadSignature, TokenScopeError):
@@ -334,7 +348,7 @@ class PasswordSetMixin(SuccessErrorsOutput):
                     user.status.save(update_fields=["verified"])  # type: ignore
 
                 return cls(success=True)
-            return cls(success=False, errors=f.errors)
+            return cls(success=False, errors=f.errors.get_json_data())
         except SignatureExpired:
             return cls(success=False, errors=Messages.EXPIRED_TOKEN)
         except (BadSignature, TokenScopeError):
@@ -367,7 +381,11 @@ class ObtainJSONWebTokenMixin(SuccessErrorsOutput):
 
     @classmethod
     def resolve(cls, root, info, **kwargs):
-        user = cls.user_to_login if cls.user_to_login == info.context.user else info.context.user
+        user = (
+            cls.user_to_login
+            if cls.user_to_login == info.context.user
+            else info.context.user
+        )
         if user.status.archived is True:  # unarchive on login # type: ignore
             UserStatus.unarchive(user)
             unarchiving = True
@@ -379,7 +397,8 @@ class ObtainJSONWebTokenMixin(SuccessErrorsOutput):
     def resolve_mutation(cls, root, info, **kwargs):
         if len(kwargs.items()) != 2:
             raise WrongUsageError(
-                "Must login with password and one of the following fields %s." % (app_settings.LOGIN_ALLOWED_FIELDS)
+                "Must login with password and one of the following fields %s."
+                % (app_settings.LOGIN_ALLOWED_FIELDS)
             )
 
         try:
@@ -496,7 +515,7 @@ class PasswordChangeMixin(SuccessErrorsOutput):
                 return_value[field] = getattr(payload, field)
             return cls(**return_value)
         else:
-            return cls(success=False, errors=f.errors)
+            return cls(success=False, errors=f.errors.get_json_data())
 
 
 class UpdateAccountMixin(SuccessErrorsOutput):
@@ -520,7 +539,7 @@ class UpdateAccountMixin(SuccessErrorsOutput):
         if f.is_valid():
             f.save()
             return cls(success=True)
-        return cls(success=False, errors=f.errors)
+        return cls(success=False, errors=f.errors.get_json_data())
 
 
 class VerifyOrRefreshOrRevokeTokenMixin(SuccessErrorsOutput):
@@ -536,7 +555,7 @@ class VerifyOrRefreshOrRevokeTokenMixin(SuccessErrorsOutput):
         except JSONWebTokenExpired:
             return cls(success=False, errors=Messages.EXPIRED_TOKEN)
         except JSONWebTokenError as e:
-            if str(e).endswith('expired'):
+            if str(e).endswith("expired"):
                 return cls(success=False, errors=Messages.EXPIRED_TOKEN)
             return cls(success=False, errors=Messages.INVALID_TOKEN)
 
@@ -558,11 +577,13 @@ class SendSecondaryEmailActivationMixin(SuccessErrorsOutput):
             if f.is_valid():
                 user = info.context.user
                 if async_email_func:
-                    async_email_func(user.status.send_secondary_email_activation, (info, email))
+                    async_email_func(
+                        user.status.send_secondary_email_activation, (info, email)
+                    )
                 else:
                     user.status.send_secondary_email_activation(info, email)
                 return cls(success=True)
-            return cls(success=False, errors=f.errors)
+            return cls(success=False, errors=f.errors.get_json_data())
         except EmailAlreadyInUseError:
             return cls(success=False, errors=Messages.EMAIL_IN_USE)
         except SMTPException:

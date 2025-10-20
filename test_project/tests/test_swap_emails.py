@@ -10,7 +10,9 @@ class SwapEmailsCommonTestCase(CommonTestCase):
             verified=True,
             secondary_email="secondary@email.com",
         )
-        self.user2 = self.create_user(email="baa@email.com", username="baa", verified=True)
+        self.user2 = self.create_user(
+            email="baa@email.com", username="baa", verified=True
+        )
 
     def get_query(self, password=None) -> str:
         raise NotImplementedError
@@ -20,8 +22,8 @@ class SwapEmailsCommonTestCase(CommonTestCase):
         response = self.query(self.get_query())
         self.assertResponseNoErrors(response)
         result = self.get_response_result(response)
-        self.assertTrue(result['success'])
-        self.assertIsNone(result['errors'])
+        self.assertTrue(result["success"])
+        self.assertIsNone(result["errors"])
         self.user.refresh_from_db()
         self.assertEqual(self.user.email, "secondary@email.com")  # type: ignore
         self.assertEqual(self.user.status.secondary_email, "bar@email.com")  # type: ignore
@@ -30,15 +32,15 @@ class SwapEmailsCommonTestCase(CommonTestCase):
         self.client.force_login(self.user2)
         response = self.query(self.get_query())
         result = self.get_response_result(response)
-        self.assertFalse(result['success'])
-        self.assertEqual(result['errors'], Messages.SECONDARY_EMAIL_REQUIRED)
+        self.assertFalse(result["success"])
+        self.assertEqual(result["errors"], Messages.SECONDARY_EMAIL_REQUIRED)
         self.user.refresh_from_db()
         self.assertNotEqual(self.user.email, "secondary@email.com")  # type: ignore
         self.assertNotEqual(self.user.status.secondary_email, "bar@email.com")  # type: ignore
 
 
 class SwapEmailsTestCase(SwapEmailsCommonTestCase):
-    RESPONSE_RESULT_KEY = 'swapEmails'
+    RESPONSE_RESULT_KEY = "swapEmails"
 
     def get_query(self, password=None):
         return """
@@ -52,7 +54,7 @@ class SwapEmailsTestCase(SwapEmailsCommonTestCase):
 
 
 class SwapEmailsRelayTestCase(SwapEmailsCommonTestCase):
-    RESPONSE_RESULT_KEY = 'relaySwapEmails'
+    RESPONSE_RESULT_KEY = "relaySwapEmails"
 
     def get_query(self, password=None):
         return """

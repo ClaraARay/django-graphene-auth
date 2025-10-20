@@ -21,42 +21,52 @@ class RevokeTokenCommonTestCase(CommonTestCase):
         query = self.get_login_query()
         response = self.query(query)
         self.assertResponseNoErrors(response)
-        result = json.loads(response.content.decode())['data'][self.LOGIN_QUERY_RESPONSE_RESULT_KEY]
+        result = json.loads(response.content.decode())["data"][
+            self.LOGIN_QUERY_RESPONSE_RESULT_KEY
+        ]
 
-        query = self.get_revoke_query(result['refreshToken'])
+        query = self.get_revoke_query(result["refreshToken"])
         response = self.query(query)
         result = self.get_response_result(response)
-        self.assertTrue(result['success'])
-        self.assertIsNone(result['errors'])
-        self.assertEqual(datetime.fromtimestamp(result['revoked']).date(), datetime.today().date())
+        self.assertTrue(result["success"])
+        self.assertIsNone(result["errors"])
+        self.assertEqual(
+            datetime.fromtimestamp(result["revoked"]).date(), datetime.today().date()
+        )
 
     def _test_successfully_with_expired_token(self):
         query = self.get_login_query()
         response = self.query(query)
         self.assertResponseNoErrors(response)
-        result = json.loads(response.content.decode())['data'][self.LOGIN_QUERY_RESPONSE_RESULT_KEY]
+        result = json.loads(response.content.decode())["data"][
+            self.LOGIN_QUERY_RESPONSE_RESULT_KEY
+        ]
 
-        query = self.get_revoke_query(result['refreshToken'])
-        with self.settings(GRAPHQL_JWT={'JWT_REFRESH_EXPIRATION_DELTA': timedelta(seconds=-1)}):
+        query = self.get_revoke_query(result["refreshToken"])
+        with self.settings(
+            GRAPHQL_JWT={"JWT_REFRESH_EXPIRATION_DELTA": timedelta(seconds=-1)}
+        ):
             response = self.query(query)
         result = self.get_response_result(response)
-        self.assertTrue(result['success'])
-        self.assertIsNone(result['errors'])
-        self.assertEqual(datetime.fromtimestamp(result['revoked']).date(), datetime.today().date())
+        self.assertTrue(result["success"])
+        self.assertIsNone(result["errors"])
+        self.assertEqual(
+            datetime.fromtimestamp(result["revoked"]).date(), datetime.today().date()
+        )
 
     def _test_invalid_token(self):
-        query = self.get_revoke_query('invalid_token')
+        query = self.get_revoke_query("invalid_token")
         response = self.query(query)
         self.assertResponseNoErrors(response)
         result = self.get_response_result(response)
-        self.assertFalse(result['success'])
-        self.assertEqual(result['errors'], Messages.INVALID_TOKEN)
-        self.assertIsNone(result['revoked'])
+        self.assertFalse(result["success"])
+        self.assertEqual(result["errors"], Messages.INVALID_TOKEN)
+        self.assertIsNone(result["revoked"])
 
 
 class RevokeTokenTestCase(RevokeTokenCommonTestCase):
-    RESPONSE_RESULT_KEY = 'revokeToken'
-    LOGIN_QUERY_RESPONSE_RESULT_KEY = 'tokenAuth'
+    RESPONSE_RESULT_KEY = "revokeToken"
+    LOGIN_QUERY_RESPONSE_RESULT_KEY = "tokenAuth"
 
     def get_login_query(self):
         return """
@@ -80,8 +90,8 @@ class RevokeTokenTestCase(RevokeTokenCommonTestCase):
 
 
 class RevokeTokenRelayTestCase(RevokeTokenCommonTestCase):
-    RESPONSE_RESULT_KEY = 'relayRevokeToken'
-    LOGIN_QUERY_RESPONSE_RESULT_KEY = 'relayTokenAuth'
+    RESPONSE_RESULT_KEY = "relayRevokeToken"
+    LOGIN_QUERY_RESPONSE_RESULT_KEY = "relayTokenAuth"
 
     def get_login_query(self):
         return """

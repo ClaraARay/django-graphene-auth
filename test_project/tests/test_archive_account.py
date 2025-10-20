@@ -5,11 +5,13 @@ from graphql_auth.constants import Messages
 
 
 class ArchiveAccountCommonTestCase(CommonTestCase):
-    RESPONSE_RESULT_KEY = 'archiveAccount'
+    RESPONSE_RESULT_KEY = "archiveAccount"
 
     def setUp(self):
         self.user1 = self.create_user(email="foo@email.com", username="foo")
-        self.user2 = self.create_user(email="bar@email.com", username="bar", verified=True)
+        self.user2 = self.create_user(
+            email="bar@email.com", username="bar", verified=True
+        )
 
     def get_login_query(self) -> str:
         raise NotImplementedError
@@ -24,20 +26,20 @@ class ArchiveAccountCommonTestCase(CommonTestCase):
         response = self.query(self.archive_account_query())
         self.assertResponseHasErrors(response)
         error = self.get_response_errors(response)[0]
-        self.assertEqual(error['message'], Messages.UNAUTHENTICATED['message'])
-        self.assertEqual(error['extensions'], Messages.UNAUTHENTICATED)
+        self.assertEqual(error[0]["message"], Messages.UNAUTHENTICATED[0]["message"])
+        self.assertEqual(error["extensions"], Messages.UNAUTHENTICATED)
 
     def _test_invalid_password(self):
         """
         try to archive account with invalid password
         """
-        query = self.archive_account_query(password='invalid_password')
+        query = self.archive_account_query(password="invalid_password")
         self.client.force_login(self.user2)
         response = self.query(query)
         self.assertResponseNoErrors(response)
         result = self.get_response_result(response)
-        self.assertFalse(result['success'])
-        self.assertEqual(result['errors']['password'], Messages.INVALID_PASSWORD)
+        self.assertFalse(result["success"])
+        self.assertEqual(result["errors"]["password"], Messages.INVALID_PASSWORD)
 
     def _test_valid_password(self):
         """
@@ -85,13 +87,13 @@ class ArchiveAccountCommonTestCase(CommonTestCase):
         response = self.query(query)
         self.assertResponseNoErrors(response)
         result = self.get_response_result(response)
-        self.assertFalse(result['success'])
-        self.assertEqual(result['errors'], Messages.NOT_VERIFIED)
+        self.assertFalse(result["success"])
+        self.assertEqual(result["errors"], Messages.NOT_VERIFIED)
         self.assertEqual(self.user1.status.archived, False)  # type: ignore
 
 
 class ArchiveAccountTestCase(ArchiveAccountCommonTestCase):
-    RESPONSE_RESULT_KEY = 'archiveAccount'
+    RESPONSE_RESULT_KEY = "archiveAccount"
 
     def get_login_query(self):
         return """
@@ -119,7 +121,7 @@ class ArchiveAccountTestCase(ArchiveAccountCommonTestCase):
 
 
 class ArchiveAccountRelayTestCase(ArchiveAccountCommonTestCase):
-    RESPONSE_RESULT_KEY = 'relayArchiveAccount'
+    RESPONSE_RESULT_KEY = "relayArchiveAccount"
 
     def get_login_query(self):
         return """

@@ -47,7 +47,8 @@ def using_refresh_tokens():
     return (
         hasattr(django_settings, "GRAPHQL_JWT")
         and django_settings.GRAPHQL_JWT.get("JWT_LONG_RUNNING_REFRESH_TOKEN", False)
-        and "graphql_jwt.refresh_token.apps.RefreshTokenConfig" in django_settings.INSTALLED_APPS
+        and "graphql_jwt.refresh_token.apps.RefreshTokenConfig"
+        in django_settings.INSTALLED_APPS
     )
 
 
@@ -82,7 +83,9 @@ def normalize_fields(dict_or_list, extra_list):
         return dict_or_list + extra_list
 
 
-def get_classes(module: str | types.ModuleType, class_type: type | None = None) -> list[tuple[str, type]]:
+def get_classes(
+    module: str | types.ModuleType, class_type: type | None = None
+) -> list[tuple[str, type]]:
     """
     Returns list of all classes od type `class_type` defined in the given module path.
     """
@@ -90,13 +93,17 @@ def get_classes(module: str | types.ModuleType, class_type: type | None = None) 
         module = import_module(module)
     if not class_type:
         return inspect.getmembers(module, inspect.isclass)
-    return [item for item in inspect.getmembers(module, inspect.isclass) if issubclass(item[1], class_type)]
+    return [
+        item
+        for item in inspect.getmembers(module, inspect.isclass)
+        if issubclass(item[1], class_type)
+    ]
 
 
 def camelize_form_errors(errors: dict) -> dict:
     """Camelize dict of django form errors"""
-    if errors.get('__all__', False):
-        errors['non_field_errors'] = errors.pop('__all__')
+    if errors.get("__all__", False):
+        errors["non_field_errors"] = errors.pop("__all__")
     return camelize(errors)  # type: ignore
 
 
@@ -106,4 +113,4 @@ def get_user_by_natural_key(username) -> AbstractBaseUser | None:
     is using `select_related('status')`
     """
     UserModel = get_user_model()
-    return UserModel._default_manager.select_related('status').filter(**{UserModel.USERNAME_FIELD: username}).first()  # type: ignore
+    return UserModel._default_manager.select_related("status").filter(**{UserModel.USERNAME_FIELD: username}).first()  # type: ignore

@@ -8,16 +8,17 @@ from django.utils.module_loading import import_string
 from .settings import graphql_auth_settings as app_settings
 from .types import ExpectedErrorType
 
+
 def get_user_by_email(email):
     """
     get user by email or by secondary email
     raise ObjectDoesNotExist
     """
-    
+
     UserModel = get_user_model()
 
     user = (
-        UserModel._default_manager.select_related('status')
+        UserModel._default_manager.select_related("status")
         .filter(Q(**{UserModel.EMAIL_FIELD: email}) | Q(status__secondary_email=email))  # type: ignore
         .first()
     )
@@ -35,13 +36,19 @@ def get_user_to_login(**kwargs):
 
     UserModel = get_user_model()
 
-    if 'email' in kwargs.keys():
-        lookup_filter = Q(email=kwargs['email'])
+    if "email" in kwargs.keys():
+        lookup_filter = Q(email=kwargs["email"])
         if app_settings.ALLOW_LOGIN_WITH_SECONDARY_EMAIL:
-            lookup_filter |= Q(status__secondary_email=kwargs['email'])
-        user = UserModel._default_manager.select_related('status').filter(lookup_filter).first()
+            lookup_filter |= Q(status__secondary_email=kwargs["email"])
+        user = (
+            UserModel._default_manager.select_related("status")
+            .filter(lookup_filter)
+            .first()
+        )
     else:
-        user = UserModel._default_manager.select_related('status').filter(**kwargs).first()
+        user = (
+            UserModel._default_manager.select_related("status").filter(**kwargs).first()
+        )
     if user:
         return user
     else:
@@ -58,7 +65,9 @@ async_email_func = get_async_email_func()
 
 
 def get_output_error_type():
-    if app_settings.CUSTOM_ERROR_TYPE and isinstance(app_settings.CUSTOM_ERROR_TYPE, str):
+    if app_settings.CUSTOM_ERROR_TYPE and isinstance(
+        app_settings.CUSTOM_ERROR_TYPE, str
+    ):
         return import_string(app_settings.CUSTOM_ERROR_TYPE)
     else:
         return ExpectedErrorType

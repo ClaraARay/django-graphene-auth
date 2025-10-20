@@ -19,17 +19,17 @@ class RemoveSecondaryEmailCommonTestCase(CommonTestCase):
         response = self.query(self.get_query())
         self.assertResponseNoErrors(response)
         result = self.get_response_result(response)
-        self.assertTrue(result['success'])
-        self.assertIsNone(result['errors'])
+        self.assertTrue(result["success"])
+        self.assertIsNone(result["errors"])
         self.user.refresh_from_db()
         self.assertIsNone(self.user.status.secondary_email)  # type: ignore
 
     def _test_remove_email_failed_by_wrong_password(self):
         self.client.force_login(self.user)
-        response = self.query(self.get_query('wrong_password'))
+        response = self.query(self.get_query("wrong_password"))
         result = self.get_response_result(response)
-        self.assertFalse(result['success'])
-        self.assertEqual(result['errors'], {'password': Messages.INVALID_PASSWORD})
+        self.assertFalse(result["success"])
+        self.assertEqual(result["errors"], {"password": Messages.INVALID_PASSWORD})
         self.user.refresh_from_db()
         self.assertIsNotNone(self.user.status.secondary_email)  # type: ignore
 
@@ -41,13 +41,13 @@ class RemoveSecondaryEmailCommonTestCase(CommonTestCase):
         self.client.force_login(self.user)
         response = self.query(self.get_query())
         result = self.get_response_result(response)
-        self.assertFalse(result['success'])
-        self.assertEqual(result['errors'], Messages.SECONDARY_EMAIL_REQUIRED)
+        self.assertFalse(result["success"])
+        self.assertEqual(result["errors"], Messages.SECONDARY_EMAIL_REQUIRED)
         self.user.refresh_from_db()
 
 
 class RemoveSecondaryEmailTestCase(RemoveSecondaryEmailCommonTestCase):
-    RESPONSE_RESULT_KEY = 'removeSecondaryEmail'
+    RESPONSE_RESULT_KEY = "removeSecondaryEmail"
 
     def get_query(self, password=None):
         return """
@@ -61,7 +61,7 @@ class RemoveSecondaryEmailTestCase(RemoveSecondaryEmailCommonTestCase):
 
 
 class RemoveSecondaryEmailRelayTestCase(RemoveSecondaryEmailCommonTestCase):
-    RESPONSE_RESULT_KEY = 'relayRemoveSecondaryEmail'
+    RESPONSE_RESULT_KEY = "relayRemoveSecondaryEmail"
 
     def get_query(self, password=None):
         return """

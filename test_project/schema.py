@@ -1,7 +1,6 @@
 import graphene
-
-from graphql_auth.queries import UserQuery, MeQuery
 from graphql_auth import mutations, relay
+from graphql_auth.queries import MeQuery, UserQuery
 
 
 class AuthMutation(graphene.ObjectType):
@@ -24,6 +23,7 @@ class AuthMutation(graphene.ObjectType):
     verify_token = mutations.VerifyToken.Field()
     refresh_token = mutations.RefreshToken.Field()
     revoke_token = mutations.RevokeToken.Field()
+
 
 class AuthRelayMutation(graphene.ObjectType):
     relay_register = relay.Register.Field()

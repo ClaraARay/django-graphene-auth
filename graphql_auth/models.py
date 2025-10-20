@@ -9,7 +9,11 @@ from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 
 from .constants import TokenAction
-from .exceptions import EmailAlreadyInUseError, UserAlreadyVerifiedError, WrongUsageError
+from .exceptions import (
+    EmailAlreadyInUseError,
+    UserAlreadyVerifiedError,
+    WrongUsageError,
+)
 from .settings import graphql_auth_settings as app_settings
 from .signals import user_verified
 from .utils import get_token, get_token_payload
@@ -22,7 +26,9 @@ class UserStatus(models.Model):
     A helper model that handles user account stuff.
     """
 
-    user = models.OneToOneField(django_settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="status")
+    user = models.OneToOneField(
+        django_settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="status"
+    )
     verified = models.BooleanField(default=False)
     archived = models.BooleanField(default=False)
     secondary_email = models.EmailField(blank=True, null=True)
@@ -61,7 +67,9 @@ class UserStatus(models.Model):
         }
 
     def send_activation_email(self, info, *args, **kwargs):
-        email_context = self.get_email_context(info, app_settings.ACTIVATION_PATH_ON_EMAIL, TokenAction.ACTIVATION)
+        email_context = self.get_email_context(
+            info, app_settings.ACTIVATION_PATH_ON_EMAIL, TokenAction.ACTIVATION
+        )
         template = app_settings.EMAIL_TEMPLATE_ACTIVATION
         subject = app_settings.EMAIL_SUBJECT_ACTIVATION
         return self.send(subject, template, email_context, *args, **kwargs)
@@ -69,13 +77,17 @@ class UserStatus(models.Model):
     def resend_activation_email(self, info, *args, **kwargs):
         if self.verified is True:
             raise UserAlreadyVerifiedError
-        email_context = self.get_email_context(info, app_settings.ACTIVATION_PATH_ON_EMAIL, TokenAction.ACTIVATION)
+        email_context = self.get_email_context(
+            info, app_settings.ACTIVATION_PATH_ON_EMAIL, TokenAction.ACTIVATION
+        )
         template = app_settings.EMAIL_TEMPLATE_ACTIVATION_RESEND
         subject = app_settings.EMAIL_SUBJECT_ACTIVATION_RESEND
         return self.send(subject, template, email_context, *args, **kwargs)
 
     def send_password_set_email(self, info, *args, **kwargs):
-        email_context = self.get_email_context(info, app_settings.PASSWORD_SET_PATH_ON_EMAIL, TokenAction.PASSWORD_SET)
+        email_context = self.get_email_context(
+            info, app_settings.PASSWORD_SET_PATH_ON_EMAIL, TokenAction.PASSWORD_SET
+        )
         template = app_settings.EMAIL_TEMPLATE_PASSWORD_SET
         subject = app_settings.EMAIL_SUBJECT_PASSWORD_SET
         return self.send(subject, template, email_context, *args, **kwargs)
@@ -115,7 +127,9 @@ class UserStatus(models.Model):
 
     @classmethod
     def verify(cls, token):
-        payload = get_token_payload(token, TokenAction.ACTIVATION, app_settings.EXPIRATION_ACTIVATION_TOKEN)
+        payload = get_token_payload(
+            token, TokenAction.ACTIVATION, app_settings.EXPIRATION_ACTIVATION_TOKEN
+        )
         user = UserModel._default_manager.get(**payload)
         user_status = cls.objects.get(user=user)
         if user_status.verified is False:

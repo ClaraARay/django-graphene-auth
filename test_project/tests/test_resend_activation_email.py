@@ -2,15 +2,18 @@ from smtplib import SMTPException
 from unittest import mock
 
 from django.core import mail
-
 from graphql_auth.common_testcase import CommonTestCase
 from graphql_auth.constants import Messages
 
 
 class ResendActivationEmailCommonTestCase(CommonTestCase):
     def setUp(self):
-        self.user1 = self.create_user(email="gaa@email.com", username="gaa", verified=False)
-        self.user2 = self.create_user(email="bar@email.com", username="bar", verified=True)
+        self.user1 = self.create_user(
+            email="gaa@email.com", username="gaa", verified=False
+        )
+        self.user2 = self.create_user(
+            email="bar@email.com", username="bar", verified=True
+        )
 
     def get_query(self, email: str) -> str:
         raise NotImplementedError
@@ -29,7 +32,7 @@ class ResendActivationEmailCommonTestCase(CommonTestCase):
         query = self.get_query("gaa@email.com")
         response = self.query(query)
         result = self.get_response_result(response)
-        self.assertTrue(result['success'])
+        self.assertTrue(result["success"])
         self.assertEqual(len(mail.outbox), 1)
         self.assertIn("Activate your account on", mail.outbox[0].subject)
 
@@ -38,16 +41,16 @@ class ResendActivationEmailCommonTestCase(CommonTestCase):
         response = self.query(query)
         self.assertResponseNoErrors(response)
         result = self.get_response_result(response)
-        self.assertFalse(result['success'])
-        self.assertEqual(result['errors'], Messages.ALREADY_VERIFIED)
+        self.assertFalse(result["success"])
+        self.assertEqual(result["errors"], Messages.ALREADY_VERIFIED)
 
     def _test_invalid_email_address(self):
         query = self.get_query("bar@email")
         response = self.query(query)
         self.assertResponseNoErrors(response)
         result = self.get_response_result(response)
-        self.assertFalse(result['success'])
-        self.assertIn('email', result['errors'].keys())
+        self.assertFalse(result["success"])
+        self.assertIn("email", result["errors"].keys())
 
     @mock.patch(
         "graphql_auth.models.UserStatus.resend_activation_email",
@@ -62,12 +65,12 @@ class ResendActivationEmailCommonTestCase(CommonTestCase):
         self.assertResponseNoErrors(response)
         self.assertResponseNoErrors(response)
         result = self.get_response_result(response)
-        self.assertFalse(result['success'])
-        self.assertEqual(result['errors'], Messages.EMAIL_FAIL)
+        self.assertFalse(result["success"])
+        self.assertEqual(result["errors"], Messages.EMAIL_FAIL)
 
 
 class ResendActivationEmailTestCase(ResendActivationEmailCommonTestCase):
-    RESPONSE_RESULT_KEY = 'resendActivationEmail'
+    RESPONSE_RESULT_KEY = "resendActivationEmail"
 
     def get_query(self, email):
         return """
@@ -81,7 +84,7 @@ class ResendActivationEmailTestCase(ResendActivationEmailCommonTestCase):
 
 
 class ResendActivationEmailRelayTestCase(ResendActivationEmailCommonTestCase):
-    RESPONSE_RESULT_KEY = 'relayResendActivationEmail'
+    RESPONSE_RESULT_KEY = "relayResendActivationEmail"
 
     def get_query(self, email):
         return """

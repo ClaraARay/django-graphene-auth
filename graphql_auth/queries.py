@@ -38,7 +38,7 @@ class UserNode(DjangoObjectType):
 
     @classmethod
     def get_queryset(cls, queryset, info):
-        return queryset.select_related('status')
+        return queryset.select_related("status")
 
     @classmethod
     def get_node(cls, info, id) -> Any:

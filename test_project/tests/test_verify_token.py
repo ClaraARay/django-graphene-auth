@@ -9,7 +9,9 @@ class VerifyTokenCommonTestCase(CommonTestCase):
     LOGIN_QUERY_RESPONSE_RESULT_KEY: str
 
     def setUp(self):
-        self.user = self.create_user(email="foo@email.com", username="foo", verified=False)
+        self.user = self.create_user(
+            email="foo@email.com", username="foo", verified=False
+        )
 
     def get_login_query(self) -> str:
         raise NotImplementedError
@@ -20,41 +22,45 @@ class VerifyTokenCommonTestCase(CommonTestCase):
     def _test_verify_token(self):
         query = self.get_login_query()
         response = self.query(query)
-        result = json.loads(response.content.decode())['data'][self.LOGIN_QUERY_RESPONSE_RESULT_KEY]
+        result = json.loads(response.content.decode())["data"][
+            self.LOGIN_QUERY_RESPONSE_RESULT_KEY
+        ]
 
-        query = self.get_verify_query(result['token'])
+        query = self.get_verify_query(result["token"])
         response = self.query(query)
         self.assertResponseNoErrors(response)
         result = self.get_response_result(response)
-        self.assertTrue(result['success'])
-        self.assertIsNone(result['errors'])
-        self.assertTrue(result['payload']['username'], self.user.username)  # type: ignore
+        self.assertTrue(result["success"])
+        self.assertIsNone(result["errors"])
+        self.assertTrue(result["payload"]["username"], self.user.username)  # type: ignore
 
     def _test_expired_token(self):
         query = self.get_login_query()
-        with self.settings(GRAPHQL_JWT={'JWT_EXPIRATION_DELTA': timedelta(seconds=-1)}):
+        with self.settings(GRAPHQL_JWT={"JWT_EXPIRATION_DELTA": timedelta(seconds=-1)}):
             response = self.query(query)
-        result = json.loads(response.content.decode())['data'][self.LOGIN_QUERY_RESPONSE_RESULT_KEY]
+        result = json.loads(response.content.decode())["data"][
+            self.LOGIN_QUERY_RESPONSE_RESULT_KEY
+        ]
 
-        query = self.get_verify_query(result['token'])
+        query = self.get_verify_query(result["token"])
         response = self.query(query)
         self.assertResponseNoErrors(response)
         result = self.get_response_result(response)
-        self.assertFalse(result['success'])
-        self.assertEqual(result['errors'], Messages.EXPIRED_TOKEN)
+        self.assertFalse(result["success"])
+        self.assertEqual(result["errors"], Messages.EXPIRED_TOKEN)
 
     def _test_invalid_token(self):
         query = self.get_verify_query("invalid_token")
         response = self.query(query)
         self.assertResponseNoErrors(response)
         result = self.get_response_result(response)
-        self.assertFalse(result['success'])
-        self.assertEqual(result['errors'], Messages.INVALID_TOKEN)
+        self.assertFalse(result["success"])
+        self.assertEqual(result["errors"], Messages.INVALID_TOKEN)
 
 
 class VerifyTokenTestCase(VerifyTokenCommonTestCase):
-    RESPONSE_RESULT_KEY = 'verifyToken'
-    LOGIN_QUERY_RESPONSE_RESULT_KEY: str = 'tokenAuth'
+    RESPONSE_RESULT_KEY = "verifyToken"
+    LOGIN_QUERY_RESPONSE_RESULT_KEY: str = "tokenAuth"
 
     def get_login_query(self):
         return """
@@ -79,8 +85,8 @@ class VerifyTokenTestCase(VerifyTokenCommonTestCase):
 
 
 class VerifyTokenRelayTestCase(VerifyTokenCommonTestCase):
-    RESPONSE_RESULT_KEY = 'relayVerifyToken'
-    LOGIN_QUERY_RESPONSE_RESULT_KEY: str = 'relayTokenAuth'
+    RESPONSE_RESULT_KEY = "relayVerifyToken"
+    LOGIN_QUERY_RESPONSE_RESULT_KEY: str = "relayTokenAuth"
 
     def get_login_query(self):
         return """

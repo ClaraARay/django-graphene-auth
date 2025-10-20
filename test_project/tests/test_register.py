@@ -11,15 +11,15 @@ class RegisterCommonTestCase(CommonTestCase):
     RESPONSE_RESULT_KEY: str
 
     @abstractmethod
-    def register_query(self, password='aaa&&111', username='username'):
+    def register_query(self, password="aaa&&111", username="username"):
         raise NotImplementedError()
 
     def _test_register_invalid_password_validation(self):
-        response = self.query(self.register_query('123'))
+        response = self.query(self.register_query("123"))
         self.assertResponseNoErrors(response)
         result = self.get_response_result(response)
-        self.assertFalse(result['success'])
-        self.assertIn('password2', result['errors'].keys())
+        self.assertFalse(result["success"])
+        self.assertIn("password2", result["errors"].keys())
 
     def _test_register(self):
         """Register user, fail to register same user again"""
@@ -36,82 +36,84 @@ class RegisterCommonTestCase(CommonTestCase):
         response = self.query(self.register_query())
         self.assertResponseNoErrors(response)
         result = self.get_response_result(response)
-        self.assertTrue(result['success'])
-        self.assertIsNone(result['errors'])
-        self.assertIsNotNone(result['token'])
-        self.assertIsNotNone(result['refreshToken'])
+        self.assertTrue(result["success"])
+        self.assertIsNone(result["errors"])
+        self.assertIsNotNone(result["token"])
+        self.assertIsNotNone(result["refreshToken"])
         self.assertTrue(signal_received)
 
         # try to register again
         response = self.query(self.register_query())
         self.assertResponseNoErrors(response)
         result = self.get_response_result(response)
-        self.assertFalse(result['success'])
-        self.assertIsNone(result['token'])
-        self.assertIsNone(result['refreshToken'])
-        self.assertIn('username', result['errors'].keys())
+        self.assertFalse(result["success"])
+        self.assertIsNone(result["token"])
+        self.assertIsNone(result["refreshToken"])
+        self.assertIn("username", result["errors"].keys())
 
         # try to register again with other username
-        response = self.query(self.register_query(username='other_username'))
+        response = self.query(self.register_query(username="other_username"))
         self.assertResponseNoErrors(response)
         result = self.get_response_result(response)
-        self.assertFalse(result['success'])
-        self.assertIsNone(result['token'])
-        self.assertIsNone(result['refreshToken'])
-        self.assertEqual(result['errors'], Messages.EMAIL_IN_USE)
+        self.assertFalse(result["success"])
+        self.assertIsNone(result["token"])
+        self.assertIsNone(result["refreshToken"])
+        self.assertEqual(result["errors"], Messages.EMAIL_IN_USE)
 
     def _test_register_with_mocked_async_email_func(self):
         """Register user, fail to register same user again"""
-        with mock.patch('graphql_auth.mixins.async_email_func') as async_email_mock:
+        with mock.patch("graphql_auth.mixins.async_email_func") as async_email_mock:
             response = self.query(self.register_query())
         result = self.get_response_result(response)
-        self.assertEqual(result['success'], True)
-        self.assertTrue(result['token'])
-        self.assertTrue(result['refreshToken'])
+        self.assertEqual(result["success"], True)
+        self.assertTrue(result["token"])
+        self.assertTrue(result["refreshToken"])
         self.assertTrue(async_email_mock.called)
 
     def _test_register_with_standard_email_func(self):
         """Register user, fail to register same user again"""
         with self.settings(EMAIL_ASYNC_TASK=None):
-            with mock.patch('graphql_auth.models.UserStatus.send_activation_email') as send_email_mock:
+            with mock.patch(
+                "graphql_auth.models.UserStatus.send_activation_email"
+            ) as send_email_mock:
                 response = self.query(self.register_query())
         result = self.get_response_result(response)
-        self.assertEqual(result['success'], True)
-        self.assertTrue(result['token'])
-        self.assertTrue(result['refreshToken'])
+        self.assertEqual(result["success"], True)
+        self.assertTrue(result["token"])
+        self.assertTrue(result["refreshToken"])
         self.assertTrue(send_email_mock.called)
 
     def _test_register_duplicate_unique_email(self):
         self.create_user(
-            email='foo@email.com',
-            username='foo',
+            email="foo@email.com",
+            username="foo",
             verified=True,
-            secondary_email='test@email.com',
+            secondary_email="test@email.com",
         )
         response = self.query(self.register_query())
         self.assertResponseNoErrors(response)
         result = self.get_response_result(response)
-        self.assertFalse(result['success'])
-        self.assertEqual(result['errors'], Messages.EMAIL_IN_USE)
+        self.assertFalse(result["success"])
+        self.assertEqual(result["errors"], Messages.EMAIL_IN_USE)
 
     @mock.patch(
-        'graphql_auth.models.UserStatus.send_activation_email',
+        "graphql_auth.models.UserStatus.send_activation_email",
         mock.MagicMock(side_effect=SMTPException),
     )
     def _test_register_email_send_fail(self):
         response = self.query(self.register_query())
         self.assertResponseNoErrors(response)
         result = self.get_response_result(response)
-        self.assertFalse(result['success'])
-        self.assertIsNone(result['token'])
-        self.assertEqual(result['errors'], Messages.FAILED_SENDING_ACTIVATION_EMAIL)
+        self.assertFalse(result["success"])
+        self.assertIsNone(result["token"])
+        self.assertEqual(result["errors"], Messages.FAILED_SENDING_ACTIVATION_EMAIL)
 
 
 class RegisterTestCase(RegisterCommonTestCase):
-    RESPONSE_RESULT_KEY = 'register'
+    RESPONSE_RESULT_KEY = "register"
 
-    def register_query(self, password='aaa&&111', username='username'):
-        return '''
+    def register_query(self, password="aaa&&111", username="username"):
+        return """
         mutation {
             register(
                 email: "test@email.com",
@@ -121,7 +123,7 @@ class RegisterTestCase(RegisterCommonTestCase):
             )
             { success, errors, token, refreshToken }
         }
-        ''' % (
+        """ % (
             username,
             password,
             password,
@@ -129,10 +131,10 @@ class RegisterTestCase(RegisterCommonTestCase):
 
 
 class RegisterRelayTestCase(RegisterTestCase):
-    RESPONSE_RESULT_KEY = 'relayRegister'
+    RESPONSE_RESULT_KEY = "relayRegister"
 
-    def register_query(self, password='aaa&&111', username='username'):
-        return '''
+    def register_query(self, password="aaa&&111", username="username"):
+        return """
         mutation {
             relayRegister(input: {email: "test@email.com", username: "%s", password1: "%s", password2: "%s"}) {
                 success,
@@ -141,7 +143,7 @@ class RegisterRelayTestCase(RegisterTestCase):
                 refreshToken
             }
         }
-        ''' % (
+        """ % (
             username,
             password,
             password,
